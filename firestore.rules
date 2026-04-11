@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false; 
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+
+      match /draftHistories/{docId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && resource.data.userId == userId;
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isOwner(userId) && resource.data.userId == userId;
+        allow delete: if isOwner(userId) && resource.data.userId == userId;
+      }
+
+      match /generationHistories/{docId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && resource.data.userId == userId;
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isOwner(userId) && resource.data.userId == userId;
+        allow delete: if isOwner(userId) && resource.data.userId == userId;
+      }
+    }
+
+    match /roles_admin/{adminId} {
+      allow get: if isSignedIn();
+      allow list: if false; 
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource.data.userId == userId;
+    }
+  }
+}
