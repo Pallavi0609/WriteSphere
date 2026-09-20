@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
     await req.json();
 
   if (req.headers.get('accept') === 'text/event-stream') {
-    // Streaming response
     const stream = await ai.runFlow(
       generateArticleDraft,
       {
@@ -41,7 +40,6 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Non-streaming response
   try {
     const draft = await ai.runFlow(generateArticleDraft, {
       topic,
