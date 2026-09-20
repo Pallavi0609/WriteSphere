@@ -16,7 +16,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Document, Packer, Paragraph } from 'docx';
-import PptxGenJS from 'pptxgenjs';
 
 interface GenerationActionsProps {
   textToCopy: string;
@@ -38,9 +37,7 @@ export function GenerationActions({
     });
   };
 
-  const handleExport = async (
-    format: 'txt' | 'pdf' | 'docx' | 'pptx'
-  ) => {
+  const handleExport = async (format: 'txt' | 'pdf' | 'docx') => {
     if (format === 'txt') {
       const blob = new Blob([textToCopy], {
         type: 'text/plain;charset=utf-8',
@@ -57,7 +54,9 @@ export function GenerationActions({
       document.body.removeChild(link);
 
       URL.revokeObjectURL(url);
-    } else if (format === 'docx') {
+    }
+
+    if (format === 'docx') {
       const doc = new Document({
         sections: [
           {
@@ -83,32 +82,9 @@ export function GenerationActions({
       document.body.removeChild(link);
 
       URL.revokeObjectURL(url);
-    } else if (format === 'pptx') {
-      const pptx = new PptxGenJS();
+    }
 
-      const slide = pptx.addSlide();
-
-      slide.addText(textToCopy, {
-        x: 1,
-        y: 1,
-        w: '80%',
-        h: '80%',
-      });
-
-      const blob = await pptx.write('blob');
-
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-
-      link.href = url;
-      link.download = `${fileName}.pptx`;
-
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      URL.revokeObjectURL(url);
-    } else if (format === 'pdf') {
+    if (format === 'pdf') {
       const printWindow = window.open('', '_blank');
 
       if (printWindow) {
@@ -216,13 +192,6 @@ export function GenerationActions({
             >
               <FileDown className="mr-2 h-4 w-4" />
               Download as .docx
-            </DropdownMenuItem>
-
-            <DropdownMenuItem
-              onClick={() => handleExport('pptx')}
-            >
-              <FileDown className="mr-2 h-4 w-4" />
-              Download as .pptx
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
