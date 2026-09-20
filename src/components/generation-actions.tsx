@@ -38,16 +38,24 @@ export function GenerationActions({
     });
   };
 
-  const handleExport = async (format: 'txt' | 'pdf' | 'docx' | 'pptx') => {
+  const handleExport = async (
+    format: 'txt' | 'pdf' | 'docx' | 'pptx'
+  ) => {
     if (format === 'txt') {
-      const blob = new Blob([textToCopy], { type: 'text/plain;charset=utf-8' });
+      const blob = new Blob([textToCopy], {
+        type: 'text/plain;charset=utf-8',
+      });
+
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
+
       link.href = url;
       link.download = `${fileName}.txt`;
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
       URL.revokeObjectURL(url);
     } else if (format === 'docx') {
       const doc = new Document({
@@ -55,7 +63,9 @@ export function GenerationActions({
           {
             properties: {},
             children: [
-              new Paragraph({ text: textToCopy }),
+              new Paragraph({
+                text: textToCopy,
+              }),
             ],
           },
         ],
@@ -64,29 +74,55 @@ export function GenerationActions({
       const blob = await Packer.toBlob(doc);
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
+
       link.href = url;
       link.download = `${fileName}.docx`;
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
       URL.revokeObjectURL(url);
     } else if (format === 'pptx') {
       const pptx = new PptxGenJS();
+
       const slide = pptx.addSlide();
-      slide.addText(textToCopy, { x: 1, y: 1, w: '80%', h: '80%' });
+
+      slide.addText(textToCopy, {
+        x: 1,
+        y: 1,
+        w: '80%',
+        h: '80%',
+      });
+
       const blob = await pptx.write('blob');
+
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
+
       link.href = url;
       link.download = `${fileName}.pptx`;
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
       URL.revokeObjectURL(url);
     } else if (format === 'pdf') {
       const printWindow = window.open('', '_blank');
+
       if (printWindow) {
-        printWindow.document.write(`<html><head><title>${fileName}</title></head><body><pre>${textToCopy}</pre></body></html>`);
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>${fileName}</title>
+            </head>
+            <body>
+              <pre>${textToCopy}</pre>
+            </body>
+          </html>
+        `);
+
         printWindow.document.close();
         printWindow.print();
       }
@@ -97,61 +133,94 @@ export function GenerationActions({
     <TooltipProvider>
       <div className="flex items-center gap-2">
         {onSave && (
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" onClick={onSave}>
-                        <Save className="h-4 w-4" />
-                        <span className="sr-only">Save Draft</span>
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p>Save Draft</p>
-                </TooltipContent>
-            </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onSave}
+              >
+                <Save className="h-4 w-4" />
+                <span className="sr-only">Save Draft</span>
+              </Button>
+            </TooltipTrigger>
+
+            <TooltipContent>
+              <p>Save Draft</p>
+            </TooltipContent>
+          </Tooltip>
         )}
+
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={handleCopy}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleCopy}
+            >
               {copied ? (
                 <Check className="h-4 w-4" />
               ) : (
                 <Clipboard className="h-4 w-4" />
               )}
-              <span className="sr-only">Copy to clipboard</span>
+
+              <span className="sr-only">
+                Copy to clipboard
+              </span>
             </Button>
           </TooltipTrigger>
+
           <TooltipContent>
             <p>Copy to clipboard</p>
           </TooltipContent>
         </Tooltip>
+
         <DropdownMenu>
           <Tooltip>
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                >
                   <Download className="h-4 w-4" />
-                  <span className="sr-only">Download</span>
+                  <span className="sr-only">
+                    Download
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
             </TooltipTrigger>
+
             <TooltipContent>
               <p>Download</p>
             </TooltipContent>
           </Tooltip>
+
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleExport('txt')}>
+            <DropdownMenuItem
+              onClick={() => handleExport('txt')}
+            >
               <FileDown className="mr-2 h-4 w-4" />
               Download as .txt
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleExport('pdf')}>
+
+            <DropdownMenuItem
+              onClick={() => handleExport('pdf')}
+            >
               <FileDown className="mr-2 h-4 w-4" />
               Download as .pdf
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleExport('docx')}>
+
+            <DropdownMenuItem
+              onClick={() => handleExport('docx')}
+            >
               <FileDown className="mr-2 h-4 w-4" />
               Download as .docx
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleExport('pptx')}>
+
+            <DropdownMenuItem
+              onClick={() => handleExport('pptx')}
+            >
               <FileDown className="mr-2 h-4 w-4" />
               Download as .pptx
             </DropdownMenuItem>
