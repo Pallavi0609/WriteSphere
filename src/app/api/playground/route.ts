@@ -3,25 +3,11 @@ import { ai } from '@/ai/genkit';
 import { generateArticleDraft } from '@/ai/flows/generate-article-draft';
 import { getFirestore, collection, addDoc } from 'firebase/firestore/lite';
 import { app } from '@/firebase';
-import { getAuth } from 'firebase-admin/auth';
-import { adminApp } from '@/firebase/admin';
-
-async function getUserIdFromSession(req: NextRequest): Promise<string | null> {
-  const sessionCookie = req.cookies.get('__session')?.value;
-  if (!sessionCookie) return null;
-
-  try {
-    const decoded = await getAuth(adminApp).verifySessionCookie(sessionCookie);
-    return decoded.uid;
-  } catch (error) {
-    console.error('Error verifying session cookie:', error);
-    return null;
-  }
-}
+import { auth } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
-  const userId = await getUserIdFromSession(req);
-  if (!userId) {
+  const session = await auth();
+  if (!session?.user?.id) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
     });
@@ -60,8 +46,8 @@ export async function POST(req: NextRequest) {
       });
 
       const db = getFirestore(app);
-      await addDoc(collection(db, 'users', userId, 'generationHistories'), {
-        userId,
+      await addDoc(collection(db, 'users', session.user.id, 'generationHistories'), {
+        userId: session.user.id,
         topic,
         tone,
         purpose,
