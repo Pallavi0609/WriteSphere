@@ -47,21 +47,25 @@ export default function LoginPage() {
         password
       );
       
-      const idToken = await userCredential.user.getIdToken();
+      const response = await fetch('/api/auth/session', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ idToken }),
+});
 
-      await fetch('/api/auth/session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ idToken }),
-      });
+if (!response.ok) {
+  const data = await response.json().catch(() => ({}));
+  throw new Error(data.error || 'Failed to create login session');
+}
 
-      toast({
-        title: 'Login Successful',
-        description: 'Redirecting you to the dashboard...',
-      });
-      router.push('/dashboard');
+toast({
+  title: 'Login Successful',
+  description: 'Redirecting you to the dashboard...',
+});
+
+router.replace('/dashboard');
     } catch (error: any) {
       let errorMessage = 'An unexpected error occurred. Please try again.';
       if (error.code) {
