@@ -1,5 +1,4 @@
-
-import { initializeApp, getApps, App } from 'firebase-admin/app';
+import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
 import { firebaseConfig } from './config';
 
 function createAdminApp(): App {
@@ -7,11 +6,25 @@ function createAdminApp(): App {
     return getApps()[0];
   }
 
-  // This will use the GOOGLE_APPLICATION_CREDENTIALS environment variable
-  // for authentication, which is automatically set in the App Hosting environment.
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+
+  if (
+    !process.env.FIREBASE_PROJECT_ID ||
+    !process.env.FIREBASE_CLIENT_EMAIL ||
+    !privateKey
+  ) {
+    throw new Error(
+      'Firebase Admin environment variables are not configured.'
+    );
+  }
+
   return initializeApp({
-    projectId: firebaseConfig.projectId,
-    databaseURL: `https://${firebaseConfig.projectId}.firebaseio.com`,
+    credential: cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey,
+    }),
+    projectId: process.env.FIREBASE_PROJECT_ID,
   });
 }
 
